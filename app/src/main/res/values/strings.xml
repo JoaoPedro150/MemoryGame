@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Jogo da memória</string>
+    <string name="reset_game">Reiniciar</string>
+    <string name="progress">Progresso</string>
+    <string name="congratulations">Parabéns!</string>
+    <string name="game_over_msg">Você tem uma boa memória!</string>
+    <string name="btn_1_text">1</string>
+    <string name="btn_2_text">2</string>
+    <string name="btn_3_text">3</string>
+    <string name="btn_4_text">4</string>
+    <string name="btn_5_text">5</string>
+    <string name="btn_6_text">6</string>
+</resources>
