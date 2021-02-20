@@ -1,4 +1,4 @@
-package com.tsi.android.memorygame;
+package com.tsi.android.activity;
 
 import org.junit.Test;
 

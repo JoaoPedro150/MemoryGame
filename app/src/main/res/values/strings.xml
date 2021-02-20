@@ -10,4 +10,14 @@
     <string name="btn_4_text">4</string>
     <string name="btn_5_text">5</string>
     <string name="btn_6_text">6</string>
+    <string name="_0">  0  </string>
+    <string name="erros">Erros</string>
+    <string name="tempo">Tempo</string>
+    <string name="save_points">Digite seu nome para salvar sua pontuação</string>
+    <string name="name">Nome</string>
+    <string name="by_time">Por tempo</string>
+    <string name="by_errors">Por erros</string>
+    <string name="best_time">Melhor tempo</string>
+    <string name="less_errors">Quantidade de erros</string>
+    <string name="limpar_registros">Limpar registros</string>
 </resources>
