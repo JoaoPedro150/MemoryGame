@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>MemoryGame</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        header > table {
+            width: 100vw;
+            font-size: x-large;
+            text-align: center;
+            margin: 10px 0;
+            height: 40px;
+            border-spacing: 0;
+        }
+
+        #table-by-time, #table-by-error {
+            margin: 30px auto;
+            width: 200px;
+            text-align: center;
+        }
+        #clear {
+            height: 40px;
+            position: fixed;
+            width: 150px;
+            bottom: 50px;
+            right: 31vw;
+        }
+   </style>
+</head>
+<body>
+<header>
+    <table>
+        <tr>
+            <th id='by-time'>Por tempo</th>
+            <th id='by-error'>Por error</th>
+        </tr>
+    </table>
+</header>
+<table id='table-by-time'>
+    <tr>
+        <th></th>
+        <th>Nome</th>
+        <th>Melhor tempo</th>
+    </tr>
+</table>
+<table id='table-by-error'>
+    <tr>
+        <th></th>
+        <th>Nome</th>
+        <th>Quantidade de erros</th>
+    </tr>
+</table>
+<button id='clear'>Limpar registros</button>
+<script>
+        errorTab = document.getElementById('by-error');
+        timeTab = document.getElementById('by-time');
+        tableByTime = document.getElementById('table-by-time');
+        tableByError = document.getElementById('table-by-error');
+        btnClear = document.getElementById('clear');
+        btnClear.onclick = () => {
+            tableByTime.innerHTML =
+                `<tr>
+                    <th></th>
+                    <th>Nome</th>
+                    <th>Melhor tempo</th>
+                </tr>`;
+            tableByError.innerHTML = `
+            <tr>
+                <th></th>
+                <th>Nome</th>
+                <th>Quantidade de erros</th>
+            </tr>`;
+            localStorage.clear();
+        };
+        errorTab.onclick = tabClick;
+        timeTab.onclick = tabClick;
+
+        function tabClick(ev) {
+            if (errorTab === ev.srcElement) {
+                errorTab.style.borderBottom = 'solid 1px';
+                tableByTime.style.display = 'none';
+                tableByError.style.display = 'table';
+                timeTab.style.borderBottom = '';
+            }
+            else {
+                timeTab.style.borderBottom = 'solid 1px';
+                tableByError.style.display = 'none';
+                tableByTime.style.display = 'table';
+                errorTab.style.borderBottom = '';
+            }
+        }
+
+        (function() {
+            timeTab.style.borderBottom = 'solid 1px';
+            tableByError.style.display = 'none';
+
+            if (localStorage.records == null) {
+                return;
+            }
+
+            let recordsDict = JSON.parse(localStorage.records);
+
+            records = []
+
+            Object.keys(recordsDict).forEach(function(key,index) {
+                recordsDict[key].name = key;
+                records.push(recordsDict[key]);
+            });
+
+            records.sort(function(a,b)  {
+              if (a.time < b.time)
+                return -1;
+              if (a.time > b.time)
+                return 1;
+              return 0;
+            });
+
+            let i = 0;
+            records.forEach(record => {
+                timerText = '';
+
+                elapsedMinutes = 0;
+
+                let y=60;
+                for(; y<=record.time; y+=60) {
+                    elapsedMinutes++;
+                }
+
+                elapsedSeconds = record.time - y + 60;
+
+                if (elapsedMinutes < 10) {
+                    timerText = '0';
+                }
+
+                timerText += elapsedMinutes + ':';
+
+                if (elapsedSeconds < 10) {
+                     timerText += '0';
+                }
+
+                timerText += elapsedSeconds;
+
+                 tableByTime.innerHTML +=
+                `<tr>
+                    <td>${++i}º</td>
+                    <td>${record.name}</td>
+                    <td>${timerText}</td>
+                </tr>`;
+            });
+
+            records.sort(function(a,b)  {
+              if (a.errorCount < b.errorCount)
+                return -1;
+              if (a.errorCount > b.errorCount)
+                return 1;
+              return 0;
+            });
+
+            i = 0;
+            records.forEach(record => {
+                 tableByError.innerHTML +=
+                `<tr>
+                    <td>${++i}º</td>
+                    <td>${record.name}</td>
+                    <td>${record.errorCount}</td>
+                </tr>`;
+            });
+        })();
+    </script>
+</body>
+</html>

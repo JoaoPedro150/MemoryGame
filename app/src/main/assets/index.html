@@ -1,0 +1,347 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>MemoryGame</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        header > table {
+            width: 100vw;
+            font-size: x-large;
+            text-align: center;
+            margin: 10px 0;
+            height: 20px;
+        }
+        header button {
+            height: 40px;
+            width: 100px;
+            font-weight: bold;
+            font-size: medium;
+        }
+        #game-table {
+            margin: 5vh auto;
+            width: 100vw;
+            max-width: 500px;
+            height: 55vh;
+            border-spacing: 10px;
+        }
+        footer {
+            height: 20vh;
+            text-align: center;
+        }
+        footer {
+            margin-top: 10px;
+        }
+        .game-btn {
+            width: 100%;
+            height: 100%;
+            font-weight: bold;
+            font-size: xx-large;
+            border: none;
+        }
+        #btn-1 {
+            background-color: red;
+        }
+        #btn-2 {
+            background-color: blue;
+        }
+        #btn-3 {
+            background-color: yellow;
+        }
+        #btn-4 {
+            background-color: green;
+        }
+        #btn-5 {
+            background-color: purple;
+        }
+        #btn-6 {
+            background-color: grey;
+        }
+         #div-end-game {
+            display: none;
+            margin: 10vh auto;
+            text-align: center;
+        }
+        #div-end-game input {
+            margin-top: 20px;
+            height: 30px;
+        }
+        #div-end-game button {
+            height: 34px;
+        }
+    </style>
+</head>
+
+<body id='root'>
+<header>
+    <table>
+        <tr>
+            <th>Erros</th>
+            <th></th>
+            <th>Tempo</th>
+        </tr>
+        <tr>
+            <td>
+                <label id="error-count">0</label>
+            </td>
+            <td>
+                <button id='reset-btn'>
+                    Reiniciar
+                </button>
+            </td>
+            <td>
+                <label id="time">00:00</label>
+            </td>
+        </tr>
+    </table>
+</header>
+<div id='div-game'>
+    <table id="game-table">
+        <tbody>
+        <tr>
+            <td>
+                <button class="game-btn" id='btn-1'>
+                    1
+                </button>
+            </td>
+            <td>
+                <button class="game-btn" id='btn-2'>
+                    2
+                </button>
+            </td>
+            <td>
+                <button class="game-btn" id='btn-3'>
+                    3
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button class="game-btn" id='btn-4'>
+                    4
+                </button>
+            </td>
+            <td>
+                <button class="game-btn" id='btn-5'>
+                    5
+                </button>
+            </td>
+            <td>
+                <button class="game-btn" id='btn-6'>
+                    6
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <footer>
+        <label>Progresso</label>
+        <progress id="progress" value="0" max="6"> 32% </progress>
+    </footer>
+</div>
+<div id='div-end-game'>
+    <h1>Parabéns!</h1>
+    <h2>Você tem uma boa memória!</h2>
+    <input placeholder="Seu nome" id='user-name'></input><button id='save-record'>Salvar recorde</button>
+</div>
+
+<script type="text/javascript">
+        buttons = [...document.getElementsByClassName("game-btn")];
+        clickSequence = 0;
+        errorCount = 0;
+        labelErrorCount = document.getElementById("error-count");
+        progressBar = document.getElementById("progress");
+        divGame = document.getElementById("div-game");
+        divGameOver = document.getElementById("div-end-game");
+        rootLayer = document.getElementById('root');
+        userName = document.getElementById('user-name');
+        btnReset =  document.getElementById("reset-btn");
+        btnReset.onclick = reset
+
+        async function reset(ev) {
+            btnReset.onclick = null;
+            stopTimer();
+            shuffle(buttons);
+            clickSequence = 0;
+            errorCount = 0;
+            elapsedMinutes = 0;
+            elapsedSeconds = 0;
+            labelErrorCount.innerHTML = '' + errorCount;
+            progressBar.value = 0;
+            divGame.style.display = 'block';
+            divGameOver.style.display = 'none';
+            rootLayer.style.backgroundColor = 'white';
+            timer.innerHTML = "00:00";
+
+            for(let i=0; i<buttons.length; i++) {
+                buttons[i].style.visibility = 'visible';
+                buttons[i].onclick = null;
+            }
+
+            await showSequence();
+
+            for(let i=0; i<buttons.length; i++) {
+                buttons[i].onclick = btnClick;
+            }
+
+            startTimer();
+            btnReset.onclick = reset;
+        };
+
+        document.getElementById('save-record').onclick = () => {
+            let records = localStorage.records;
+
+            if (records == null) {
+               records = {};
+            }
+            else {
+                records = JSON.parse(localStorage.records);
+            }
+
+            let record = records[userName.value];
+            let elapsedTime = elapsedSeconds + (60 * elapsedMinutes);
+
+            if (record == null) {
+                record = {
+                    time: elapsedTime,
+                    errorCount: errorCount
+                };
+            }
+            else {
+                if (record.time > elapsedTime) {
+                    record.time = elapsedTime;
+                }
+                if (record.errorCount > errorCount) {
+                    record.errorCount = errorCount;
+                }
+            }
+
+            records[userName.value] = record;
+            localStorage['records'] = JSON.stringify(records);
+            window.location.href = "file:///android_asset/game-over.html";
+        };
+
+        function shuffle(array) {
+          var currentIndex = array.length, temporaryValue, randomIndex;
+
+          // While there remain elements to shuffle...
+          while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+          }
+
+          return array;
+        }
+
+        async function showSequence() {
+            function runAnimation(btn) {
+
+                function execute(value) {
+                    if (value < 0) {
+                        btn.style.opacity = 1;
+                        return;
+                    }
+
+                    return new Promise(resolve => setTimeout(() => {
+                        btn.style.opacity = value;
+                        resolve();
+                    }, 40))
+                    .then(() => execute(value - 0.1));
+                }
+
+                return execute(1);
+            }
+
+            return new Promise(async (resolve) => {
+                for(let i=0; i<buttons.length; i++) {
+                    await runAnimation(buttons[i], 40);
+                }
+                resolve();
+            });
+        }
+
+        function btnClick(ev) {
+            if (ev.srcElement === buttons[clickSequence++]) {
+                rootLayer.style.backgroundColor = window.getComputedStyle(ev.srcElement)['background-color'];
+                ev.srcElement.style.visibility = 'hidden';
+            }
+            else {
+                clickSequence = 0;
+                errorCount++;
+                labelErrorCount.innerHTML = '' + errorCount;
+                for(let i=0; i<buttons.length; i++) {
+                    buttons[i].style.visibility = 'visible';
+                }
+
+                rootLayer.style.backgroundColor = 'white';
+            }
+
+            if (clickSequence == 6) {
+                divGame.style.display = 'none';
+                divGameOver.style.display = 'block';
+                stopTimer();
+            }
+
+            progressBar.value = clickSequence;
+        }
+
+        elapsedMinutes = 0;
+        elapsedSeconds = 0;
+        timerActive = true;
+        timer =  document.getElementById("time");
+
+        function stopTimer() {
+            timerActive = false;
+        }
+
+        function startTimer() {
+            function updateTimer() {
+                elapsedSeconds++;
+
+                if (elapsedSeconds >= 60) {
+                    elapsedSeconds = 0;
+                    elapsedMinutes++;
+                }
+
+                timerText = '';
+
+                if (elapsedMinutes < 10) {
+                    timerText = '0';
+                }
+
+                timerText += elapsedMinutes + ':';
+
+                if (elapsedSeconds < 10) {
+                     timerText += '0';
+                }
+
+                timerText += elapsedSeconds;
+
+                timer.innerHTML = timerText;
+
+                setTimeout(() => {
+                    if (timerActive) {
+                        updateTimer();
+                    }
+                }, 995);
+            }
+
+            timerActive = true;
+            updateTimer();
+        }
+    </script>
+</body>
+
+</html>
